@@ -1,6 +1,7 @@
 package net.fahoum.virtualportfolio;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 
@@ -16,8 +17,6 @@ public final class Utility {
         else
             asyncTask.execute();
     }
-
-
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     static void startMyRefreshTask(AsyncTask<String, Void, String> asyncTask) {
@@ -39,6 +38,11 @@ public final class Utility {
         }
         URL = URL + "&f=" + flags;
         return URL;
+    }
+
+    static int DPtoPixel(int dp, Context context) {
+        float density = context.getResources().getDisplayMetrics().density;
+       return (int)(dp * density);
     }
 
     static String getDateAsString() {

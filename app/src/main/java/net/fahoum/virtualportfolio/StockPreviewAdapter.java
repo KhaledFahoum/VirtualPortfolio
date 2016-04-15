@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 import static net.fahoum.virtualportfolio.Utility.*;
@@ -62,6 +63,13 @@ public class StockPreviewAdapter extends ArrayAdapter<Stock> {
         name.setText(nameStr);
 
         if(previewType == 0) {
+            LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.stock_prev_left_layout);
+            layout.setPadding(0, DPtoPixel(10, getContext()), 0,  DPtoPixel(10, getContext()));
+            layout = (LinearLayout) convertView.findViewById(R.id.stock_prev_middle_layout);
+            layout.setPadding(0, DPtoPixel(5, getContext()), 0,  0);
+            layout = (LinearLayout) convertView.findViewById(R.id.stock_prev_right_layout);
+            layout.setPadding(0, DPtoPixel(5, getContext()), 0,  0);
+
             if(!askPriceStr.equals("") && !bidPriceStr.equals("")) {
                 bidPrice.setText(bidPriceStr);
                 askPrice.setText(askPriceStr);

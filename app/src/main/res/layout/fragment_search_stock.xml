@@ -34,11 +34,6 @@
             android:layout_height="wrap_content"
             android:paddingRight="6dp"
             android:paddingLeft="6dp">
-            <TextView
-                android:id="@+id/stock_search_text"
-                android:text="Search company or stock symbol"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
             <EditText
                 android:id="@+id/stock_search_input"
                 android:layout_width="match_parent"

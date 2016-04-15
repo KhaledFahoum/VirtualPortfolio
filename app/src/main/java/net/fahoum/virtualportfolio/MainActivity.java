@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -84,6 +86,11 @@ public class MainActivity extends AppCompatActivity
         SwipeMenuCreator creator = new SwipeMenuCreator() {
             @Override
             public void create(SwipeMenu menu) {
+                Display display = getWindowManager().getDefaultDisplay();
+                Point size = new Point();
+                display.getSize(size);
+                int width = size.x;
+                int height = size.y;
 /*                SwipeMenuItem openItem = new SwipeMenuItem(
                         getApplicationContext());
                 openItem.setBackground(new ColorDrawable(Color.rgb(0xC9, 0xC9, 0xCE)));
@@ -94,8 +101,8 @@ public class MainActivity extends AppCompatActivity
                 menu.addMenuItem(openItem); */
                 SwipeMenuItem deleteItem = new SwipeMenuItem(getApplicationContext());
                 deleteItem.setBackground(new ColorDrawable(Color.rgb(120, 0, 0)));
-                deleteItem.setWidth(5000);  //TODO: do "max" width
-                deleteItem.setIcon(R.drawable.ic_menu_camera);
+                deleteItem.setWidth(width-100);
+                deleteItem.setIcon(R.drawable.ic_delete_forever_black_24dp);
                 menu.addMenuItem(deleteItem);
             }
         };
