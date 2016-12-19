@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorPrimary"
+    android:background="@drawable/primary_background_gradient"
     android:fitsSystemWindows="true"
     tools:context="net.fahoum.virtualportfolio.MainActivity">
 
@@ -30,5 +30,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_input_add" />
-</android.support.design.widget.CoordinatorLayout>
+        android:src="@drawable/ic_search_white_48dp">
+
+    </android.support.design.widget.FloatingActionButton></android.support.design.widget.CoordinatorLayout>

@@ -23,8 +23,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".StockViewActivity"
-            android:label="@string/app_name"></activity>
+            android:name=".StockViewFragment"
+            android:label="@string/app_name" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>

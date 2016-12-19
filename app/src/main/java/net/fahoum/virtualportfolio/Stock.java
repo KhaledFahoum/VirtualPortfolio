@@ -1,7 +1,6 @@
 package net.fahoum.virtualportfolio;
 
-
-import static net.fahoum.virtualportfolio.Utility.trimQuotes;
+import static net.fahoum.virtualportfolio.Utility.*;
 
 public class Stock {
     private String symbol = "";
@@ -9,9 +8,9 @@ public class Stock {
     private String name = "";
     private String askPrice = "";
     private String bidPrice = "";
-    private String dividendYield = "";
-    private String dividendPerShare = "";
-    private String earningsPerShare = "";
+    private String dividendPayDate = "";
+    private String dividendPerShare = "0";
+    private String earningsPerShare = "0";
     private String change = "";
     private String daysHigh = "";
     private String daysLow = "";
@@ -35,10 +34,10 @@ public class Stock {
                 exchange = value;
                 break;
             case "p2":
-                changePercent = trimQuotes(value);
+                changePercent = getNDecimals(trimQuotes(value), 2)+"%";
                 break;
             case "c1":
-                change = value;
+                change = getNDecimals(value, 2);
                 break;
             case "a":
                 askPrice = value;
@@ -46,8 +45,8 @@ public class Stock {
             case "b":
                 bidPrice = value;
                 break;
-            case "y":
-                dividendYield = value;
+            case "r1":
+                dividendPayDate = convertDateToDMY(trimQuotes(value));
                 break;
             case "d":
                 dividendPerShare = value;
@@ -95,8 +94,8 @@ public class Stock {
         return bidPrice;
     }
 
-    public String getDividendYield() {
-        return dividendYield;
+    public String getDividendPayDate() {
+        return dividendPayDate;
     }
 
     public String getDividendPerShare() {

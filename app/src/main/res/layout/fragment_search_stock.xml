@@ -7,7 +7,8 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:orientation="vertical"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:background="@drawable/secondary_background_gradient">
     <LinearLayout
         android:orientation="horizontal"
         android:paddingRight="6dp"

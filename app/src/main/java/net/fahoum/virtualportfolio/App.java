@@ -1,26 +1,31 @@
 package net.fahoum.virtualportfolio;
 
 import android.app.Application;
+import android.content.Context;
 
 public class App extends Application {
-    private Stock currentlyDisplayedStock = null;
-    private int precision;
+    private static Stock currentlyDisplayedStock = null;
+    private int PRECISION = 2;
+    private static Context appContext;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        precision = 2;
+        appContext = getApplicationContext();
     }
 
     public void setDisplayStock(Stock stock) {
         currentlyDisplayedStock = stock;
     }
 
-    public Stock getDisplayStock() {
+    public static Stock getDisplayStock() {
         return currentlyDisplayedStock;
     }
 
+    public static Context getAppContext() {
+        return appContext;
+    }
     public int getPrecision() {
-        return precision;
+        return PRECISION;
     }
 }

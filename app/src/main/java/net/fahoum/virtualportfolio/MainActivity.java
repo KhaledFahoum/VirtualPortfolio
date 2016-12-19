@@ -1,18 +1,14 @@
 package net.fahoum.virtualportfolio;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -31,12 +27,10 @@ import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,44 +38,48 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Random;
+
 import static net.fahoum.virtualportfolio.Utility.*;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SearchStockFragment.OnDataPass {
 
     private Account currentAccount = null;
-    private ArrayList<Account> allAccounts = null;
     private ArrayList<Stock> ownedFeed = null;
     private ArrayList<Stock> watchFeed = null;
     private ArrayList<ArrayList<Stock>> allFeeds = null;
     private StockPreviewAdapter watchFeedAdapter = null;
     private StockPreviewAdapter ownedFeedAdapter = null;
     private ArrayList<StockPreviewAdapter> allAdapters = null;
-    private File networkReplyFile = null;
     private FeedRefreshTask task = null;
-    private String currentNetworkFlag = null;
-    private ArrayList<String> currentNetworkFlagArray = null;
+    private String queryFlagsString = null;
+    private ArrayList<String> queryFlagsList = null;
     private enum feedId { WATCH_FEED, OWNED_FEED };
-    private feedId currentlyViewedFeed;
-    private ActionBarDrawerToggle toggle;
+    private feedId currentFeed;
     private com.baoyz.swipemenulistview.SwipeMenuListView stocksView;
-    private String storageDataFilename = "virtual_portfolio_data.dat";
+    private String currentDate = "";
+    private AccountManager accountManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Toolbar toolbar;
+        ActionBarDrawerToggle toggle;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         stocksView = (com.baoyz.swipemenulistview.SwipeMenuListView) findViewById(R.id.stocks_view);
         setTitle(R.string.watch_title);
-        restoreAccountsState();
-        currentAccount = logInCurrentAccount();
-        currentlyViewedFeed = feedId.WATCH_FEED;
-        initializeNetworkFlags();
-        initializeFeedsAndAdapters();;
+        accountManager = new AccountManager();
+        currentAccount = accountManager.getLastLoggedAccount();
+        if(currentAccount == null) {    // new user
+            currentAccount = accountManager.logInNewAccount();
+        }
+        currentFeed = feedId.WATCH_FEED;
+        currentDate = getDateAsString();
+        initializeQueryFlags();
+        initializeFeedsAndAdapters();
         bindAdapterToCurrentFeed();
         importCurrentAccountFeed();
-        refreshFeed(currentlyViewedFeed);
+        refreshFeed(currentFeed);
 
         SwipeMenuCreator creator = new SwipeMenuCreator() {
             @Override
@@ -91,14 +89,6 @@ public class MainActivity extends AppCompatActivity
                 display.getSize(size);
                 int width = size.x;
                 int height = size.y;
-/*                SwipeMenuItem openItem = new SwipeMenuItem(
-                        getApplicationContext());
-                openItem.setBackground(new ColorDrawable(Color.rgb(0xC9, 0xC9, 0xCE)));
-                openItem.setWidth(500);
-                openItem.setTitle("Open");
-                openItem.setTitleSize(18);
-                openItem.setTitleColor(Color.WHITE);
-                menu.addMenuItem(openItem); */
                 SwipeMenuItem deleteItem = new SwipeMenuItem(getApplicationContext());
                 deleteItem.setBackground(new ColorDrawable(Color.rgb(120, 0, 0)));
                 deleteItem.setWidth(width-100);
@@ -139,20 +129,19 @@ public class MainActivity extends AppCompatActivity
             }
         });
         // Initialize toolbar, navigation drawer, floation action button.
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setBackgroundTintList(ColorStateList.valueOf(Color.LTGRAY));
-        fab.setRippleColor(Color.RED);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SearchStockFragment newF = new SearchStockFragment();
-                android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                DialogFragment newFragment = SearchStockFragment.newInstance();
-                newFragment.show(transaction, "fragment_search_stock");
-            }
-        });
+        fab.setRippleColor(Color.rgb(153, 31, 0));
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        SearchStockFragment newF = new SearchStockFragment();
+                        android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        DialogFragment newFragment = SearchStockFragment.newInstance();
+                        newFragment.show(transaction, "fragment_search_stock");
+                    }
+                });
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
@@ -164,11 +153,12 @@ public class MainActivity extends AppCompatActivity
                 view.setText(currentAccount.getCreationDate());
                 view = (TextView) findViewById(R.id.portfolio_balance_value);
                 view.setText(String.valueOf(currentAccount.getBalance()));
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
             }
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
+                bindAdapterToCurrentFeed();
             }
         };
         drawer.setDrawerListener(toggle);
@@ -178,57 +168,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onDestroy() {
-        storeAccountsState();
+        accountManager.saveAccountStructure();
         super.onDestroy();
     }
 
-    public void storeAccountsState() {
-        File file = new File(getApplicationContext().getFilesDir(), storageDataFilename);
-        BufferedWriter writer;
-        String record;
-        try {
-            writer = new BufferedWriter((new FileWriter((file))));
-            writer.write("ABCD BITCH");
-            writer.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Account logInCurrentAccount() {
-        return new Account("Khaled's Portfolio");
-    }
-
-    public void restoreAccountsState() {
-        File file = new File(getApplicationContext().getFilesDir(), storageDataFilename);
-        BufferedReader reader;
-        String record;
-        String[] tokens;
-        try {
-            reader = new BufferedReader(new FileReader(file));
-            while ((record = reader.readLine()) != null) {
-                Log.d("acc", record);
-                //tokens = record.split(",");
-            }
-            reader.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void bindAdapterToCurrentFeed() {
-        stocksView.setAdapter(allAdapters.get(currentlyViewedFeed.ordinal()));
+        stocksView.setAdapter(allAdapters.get(currentFeed.ordinal()));
         stocksView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ((App) getApplicationContext()).setDisplayStock(allFeeds.
-                        get(currentlyViewedFeed.ordinal()).get(position));
-                Intent myIntent = new Intent(view.getContext(), StockViewActivity.class);
-                startActivityForResult(myIntent, 0);
+                        get(currentFeed.ordinal()).get(position));
+                StockViewFragment newF = new StockViewFragment();
+                android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                DialogFragment newFragment = StockViewFragment.newInstance();
+                newFragment.show(transaction, "fragment_stock_view");
             }
         });
     }
@@ -236,6 +190,7 @@ public class MainActivity extends AppCompatActivity
     public class FeedRefreshTask extends AsyncTask<String, Void, String> {
         private URL url;
         private feedId id;
+        private File networkReplyFile = null;
 
         public FeedRefreshTask(String url, feedId id) throws MalformedURLException {
             this.url = new URL(url);
@@ -265,28 +220,51 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPreExecute() {
+
         }
 
         @Override
         protected void onPostExecute(String result) {
-            updateFeedWithReplyFile(id);
+            BufferedReader reader;
+            String record;  // Record contains data on one stock, starting with its symbol.
+            String[] values;
+            int index;
+            try {
+                reader = new BufferedReader(new FileReader(networkReplyFile));
+                while ((record = reader.readLine()) != null) {
+                    values = record.split(",");
+                    index = findStockIndexBySymbol(values[0].substring(
+                                1, values[0].length() - 1), id);
+                    if(index == -1) {
+                        continue;
+                    }
+                    updateStock(index, values, id);
+                }
+                reader.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             allAdapters.get(id.ordinal()).notifyDataSetChanged();
             task = null;
         }
     }
 
     public void refreshFeed(feedId id) {
-        if(task != null) return;
+        if(task != null)
+            return;
         String url = "";
-        Stock stock;
         ArrayList<String> list = new ArrayList<>();
-        ArrayList<Stock> feed = allFeeds.get(currentlyViewedFeed.ordinal());
-        if(feed.size() < 1) return;
-        for(int i = 0; i < feed.size(); i++) {
-            list.add(feed.get(i).getSymbol());
+        ArrayList<Stock> feed = allFeeds.get(id.ordinal());
+        if(feed.size() < 1) {
+            allAdapters.get(id.ordinal()).notifyDataSetChanged();
+            return;
         }
-        url = buildYahooFinanceURL(list, currentNetworkFlag);
-        Log.d("network", url);
+        for(Stock stock : feed) {
+            list.add(stock.getSymbol());
+        }
+        url = buildYahooFinanceURL(list, queryFlagsString);
         try {
             task = new FeedRefreshTask(url, id);
         } catch (MalformedURLException e) {
@@ -295,73 +273,50 @@ public class MainActivity extends AppCompatActivity
         startMyRefreshTask(task);          // Task will update UI on post-execute.
     }
 
-    public void updateFeedWithReplyFile(feedId feedId) {
-        BufferedReader reader;
-        String record;
-        String[] tokens;
-        int index;
-        try {
-            reader = new BufferedReader(new FileReader(networkReplyFile));
-            while ((record = reader.readLine()) != null) {
-                tokens = record.split(",");
-                index = findStockIndexBySymbol(tokens[0], feedId, true);
-                if(index == -1) continue;
-                updateStockWithReplyRecord(index, tokens, feedId);
+    public void updateStock(int stockIndex, String[] values, feedId currentFeed) {
+        Stock stock = allFeeds.get(currentFeed.ordinal()).get(stockIndex);
+        int i = 0;
+        for(String flag : queryFlagsList) {
+            if(flag.equals("x")) {
+                i++;
+                continue;
             }
-            reader.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            stock.setValue(values[i], flag);
+            i++;
         }
     }
 
-    public void updateStockWithReplyRecord(int index, String[] tokens, feedId id){
-        Stock stock = allFeeds.get(id.ordinal()).get(index);
-        for(int i = 0; i < currentNetworkFlagArray.size(); i++) {
-            if(currentNetworkFlagArray.get(i) == "x") continue;
-            stock.setValue(tokens[i], currentNetworkFlagArray.get(i));
-        }
-    }
-
-    public int findStockIndexBySymbol(String symbol, feedId feedId, boolean trimFlag) {
-        String feedSymbol;
-        String searchSymbol;
-        if(trimFlag) {
-            searchSymbol = symbol.substring(1, symbol.length() - 1);
-        } else {
-            searchSymbol = symbol;
-        }
-        ArrayList<Stock> feedList = allFeeds.get(feedId.ordinal());
-        for(int i = 0; i < feedList.size(); i++) {
-            feedSymbol = feedList.get(i).getSymbol();
-            if(feedSymbol.equals(searchSymbol)) {
+    public int findStockIndexBySymbol(String searchSymbol, feedId currentFeed) {
+        int i = 0;
+        for(Stock stock : allFeeds.get(currentFeed.ordinal())) {
+            if(stock.getSymbol().equals(searchSymbol)) {
                 return i;
             }
+            i++;
         }
         return -1;
     }
 
-    public void initializeNetworkFlags() {
-        currentNetworkFlagArray = new ArrayList<>();
-        currentNetworkFlagArray.add("s");
-        currentNetworkFlagArray.add("a");
-        currentNetworkFlagArray.add("b");
-        currentNetworkFlagArray.add("y");
-        currentNetworkFlagArray.add("d");
-        currentNetworkFlagArray.add("c1");
-        currentNetworkFlagArray.add("p2");
-        currentNetworkFlagArray.add("v");
-        currentNetworkFlagArray.add("x");
-        currentNetworkFlagArray.add("j1");
-        currentNetworkFlagArray.add("g");
-        currentNetworkFlagArray.add("h");
-        currentNetworkFlagArray.add("e");
-        String str = "";
-        for(int i = 0; i < currentNetworkFlagArray.size(); i++) {
-            str = str + currentNetworkFlagArray.get(i);
+    public void initializeQueryFlags() {
+        queryFlagsList = new ArrayList<>();
+        queryFlagsList.add("s");
+        queryFlagsList.add("a");
+        queryFlagsList.add("b");
+        queryFlagsList.add("c1");
+        queryFlagsList.add("p2");
+        queryFlagsList.add("v");
+        queryFlagsList.add("x");
+        queryFlagsList.add("j1");
+        queryFlagsList.add("g");
+        queryFlagsList.add("h");
+        queryFlagsList.add("e");
+        queryFlagsList.add("r1");
+        queryFlagsList.add("d");
+        StringBuilder builder = new StringBuilder();
+        for(String flag : queryFlagsList) {
+            builder.append(flag);
         }
-        currentNetworkFlag = str;
+        queryFlagsString = builder.toString();
     }
 
     public void initializeFeedsAndAdapters() {
@@ -383,20 +338,25 @@ public class MainActivity extends AppCompatActivity
         ArrayList<Stock> displayFeedList;
         accountFeedList = currentAccount.getWatchedStocks();
         displayFeedList = allFeeds.get(0);
-        for(int j = 0; j < accountFeedList.size(); j++) {
-            displayFeedList.add(accountFeedList.get(j));
+        for(Stock stock : accountFeedList) {
+            displayFeedList.add(stock);
         }
         accountFeedList = currentAccount.getOwnedStocks();
         displayFeedList = allFeeds.get(1);
-        for(int j = 0; j < accountFeedList.size(); j++) {
-            displayFeedList.add(accountFeedList.get(j));
+        for(Stock stock : accountFeedList) {
+            displayFeedList.add(stock);
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.force_refresh) {
-            refreshFeed(currentlyViewedFeed);
+        if(item.getItemId() == R.id.force_refresh) {
+            refreshFeed(currentFeed);
+            return true;
+        } else if(item.getItemId() == R.id.clear_all) {
+            currentAccount.getWatchedStocks().clear();
+            allFeeds.get(feedId.WATCH_FEED.ordinal()).clear();
+            refreshFeed(feedId.WATCH_FEED);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -405,24 +365,22 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
-        if (id == R.id.watched_tickers) {
-            currentlyViewedFeed = feedId.WATCH_FEED;
-            bindAdapterToCurrentFeed();
+        if(id == R.id.watched_tickers) {
+            currentFeed = feedId.WATCH_FEED;
             setTitle(R.string.watch_title);
-        } else if (id == R.id.owned_shares) {
-            currentlyViewedFeed = feedId.OWNED_FEED;
-            bindAdapterToCurrentFeed();
+        } else if(id == R.id.owned_shares) {
+            currentFeed = feedId.OWNED_FEED;
             setTitle(R.string.owned_title);
-        } else if (id == R.id.summary_report) {
+        } else if(id == R.id.summary_report) {
 
-        } else if (id == R.id.switch_account) {
+        } else if(id == R.id.switch_account) {
 
-        } else if (id == R.id.share_portfolio) {
+        } else if(id == R.id.share_portfolio) {
 
-        } else if (id == R.id.settings) {
-
+        } else if(id == R.id.settings) {
+            Intent myIntent = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivityForResult(myIntent, 0);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -448,7 +406,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDataPass(Stock result) {
-        int index = findStockIndexBySymbol(result.getSymbol(), currentlyViewedFeed, false);
+        int index = findStockIndexBySymbol(result.getSymbol(), currentFeed);
         if(index != -1) {
             return;
         }
@@ -459,34 +417,5 @@ public class MainActivity extends AppCompatActivity
 
     public void onFragmentInteraction(Uri uri) {
         //you can leave it empty
-    }
-
-    public void initTest2() {
-        currentAccount.getWatchedStocks().add(new Stock("MSFT"));
-        currentAccount.getWatchedStocks().add(new Stock("TWTR"));
-        currentAccount.getWatchedStocks().add(new Stock("INTC"));
-/*        currentAccount.buyShares("TWTR", 500, 35);
-        currentAccount.buyShares("TWTR", 500, 35);
-        currentAccount.buyShares("MSFT", 300, 56);
-        currentAccount.buyShares("NFLX", 600, 60);*/
-    }
-
-    public void initTest() {
-        Stock temp;
-        String str;
-        char chr;
-        int num;
-        int range = 'Z' - 'A';
-        Random gen = new Random();
-        for(int i = 0; i < 50; i++) {
-            str = "";
-            for(int j = 0; j < 4; j++) {
-                num = gen.nextInt(range) + 'A';
-                chr = (char)num;
-                str = str + chr;
-            }
-            temp = new Stock(str);
-            watchFeed.add(temp);
-        }
     }
 }
