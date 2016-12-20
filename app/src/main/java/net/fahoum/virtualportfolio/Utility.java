@@ -25,7 +25,7 @@ public final class Utility {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    static void startMySearchTask(AsyncTask<Void, Void, Void> asyncTask) {
+    static void startSearchTask(AsyncTask<Void, Void, Void> asyncTask) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
             asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         else
@@ -33,7 +33,7 @@ public final class Utility {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    static void startMyRefreshTask(AsyncTask<String, Void, String> asyncTask) {
+    static void startRefreshTask(AsyncTask<String, Void, String> asyncTask) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
             asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         else

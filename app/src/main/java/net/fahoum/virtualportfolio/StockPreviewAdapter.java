@@ -108,12 +108,15 @@ public class StockPreviewAdapter extends ArrayAdapter<Stock> {
                 exchange.setTextColor(Color.rgb(184, 134, 11));
             }
         }
-        name.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/ostrich-inline.ttf"));
-        symbol.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/ostrich-black.ttf"));
-        exchange.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/ostrich-black.ttf"));
-        name.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-        symbol.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        exchange.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+        setFontAndSize(name, "fonts/ostrich-inline.ttf", 20);
+        setFontAndSize(symbol, "fonts/ostrich-black.ttf", 18);
+        setFontAndSize(exchange, "fonts/ostrich-black.ttf", 16);
         return convertView;
     }
+
+    private void setFontAndSize(TextView view, String typefaceAsset, int size) {
+        view.setTypeface(Typeface.createFromAsset(getContext().getAssets(), typefaceAsset));
+        view.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+    }
+
 }

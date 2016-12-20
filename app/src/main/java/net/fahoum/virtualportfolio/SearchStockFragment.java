@@ -103,7 +103,7 @@ public class SearchStockFragment extends DialogFragment {
                         });
                         if(inputQuery.length() < 1)
                             return;
-                        startMySearchTask(new SearchTask(inputQuery));
+                        startSearchTask(new SearchTask(inputQuery));
                     }
                 };
                 timer.schedule(searchTimerTask, DELAY);

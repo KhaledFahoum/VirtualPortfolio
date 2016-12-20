@@ -1,8 +1,6 @@
 package net.fahoum.virtualportfolio;
 
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,6 +18,7 @@ public class AccountManager {
     public AccountManager() {
         appContext = App.getAppContext();
         lastLoggedAccount = loadAccountStructure();
+        App.setCurrentAccount(lastLoggedAccount);
     }
 
     public void saveAccountStructure() {
@@ -33,6 +32,7 @@ public class AccountManager {
         Account newAccount = new Account("My New Portfolio");
         accountsList.add(newAccount);
         lastLoggedAccount = newAccount;
+        App.setCurrentAccount(newAccount);
         return newAccount;
     }
 
@@ -44,11 +44,12 @@ public class AccountManager {
     private Account loadAccountStructure() {
         accountsList = new ArrayList<Account>();
         Account recoveredAccount, lastLoggedAccount = null;
-        ArrayList<Integer> ownedAmountList;
-        ArrayList<Stock> ownedList, watchList;
+        ArrayList<Stock> watchList;
+        ArrayList<PurchasedStock> ownedList;
         BufferedReader reader;
         String record, lastLogIn, name, creationDate, balance, stockName, symbol, amount, exchange;
         Stock stock;
+        PurchasedStock purchasedStock;
         File file = new File(appContext.getFilesDir(), storageDataFilename);
         if(file == null) {
             return null;
@@ -61,11 +62,8 @@ public class AccountManager {
             }
             // else ->  record == "account line"
             while ((record = reader.readLine()) != null) {
-                Log.d("TESTER", record);
-                watchList = new ArrayList<>();
-                ownedList = new ArrayList<>();
-                ownedAmountList = new ArrayList<>();
-                Log.d("acc", record);
+                watchList = new ArrayList<Stock>();
+                ownedList = new ArrayList<PurchasedStock>();
                 lastLogIn = record.replace("\n", "");
                 record = reader.readLine();
                 name = record.replace("\n", "");
@@ -104,18 +102,19 @@ public class AccountManager {
                     stock = new Stock(symbol);
                     stock.setValue(stockName, "n");
                     stock.setValue(exchange, "x");
-                    ownedList.add(stock);
-                    ownedAmountList.add(Integer.valueOf(amount));
+                    purchasedStock = new PurchasedStock(stock);
+                    purchasedStock.setAmount(Integer.parseInt(amount));
+                    ownedList.add(purchasedStock);
                     record = reader.readLine();
                     if(record != null) {
                         record = record.replace("\n", "");
                     }
                 }
                 if(lastLogIn.equals("true")) {
-                    recoveredAccount = new Account(name, creationDate, balance, true, watchList, ownedList, ownedAmountList);
+                    recoveredAccount = new Account(name, creationDate, balance, true, watchList, ownedList);
                     lastLoggedAccount = recoveredAccount;
                 } else {
-                    recoveredAccount = new Account(name, creationDate, balance, false, watchList, ownedList, ownedAmountList);
+                    recoveredAccount = new Account(name, creationDate, balance, false, watchList, ownedList);
                 }
                 accountsList.add(recoveredAccount);
                 if(record == null) {        // Done.

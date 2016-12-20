@@ -52,8 +52,6 @@ public class MainActivity extends AppCompatActivity
     private StockPreviewAdapter ownedFeedAdapter = null;
     private ArrayList<StockPreviewAdapter> allAdapters = null;
     private FeedRefreshTask task = null;
-    private String queryFlagsString = null;
-    private ArrayList<String> queryFlagsList = null;
     private enum feedId { WATCH_FEED, OWNED_FEED };
     private feedId currentFeed;
     private com.baoyz.swipemenulistview.SwipeMenuListView stocksView;
@@ -75,12 +73,10 @@ public class MainActivity extends AppCompatActivity
         }
         currentFeed = feedId.WATCH_FEED;
         currentDate = getDateAsString();
-        initializeQueryFlags();
         initializeFeedsAndAdapters();
         bindAdapterToCurrentFeed();
         importCurrentAccountFeed();
         refreshFeed(currentFeed);
-
         SwipeMenuCreator creator = new SwipeMenuCreator() {
             @Override
             public void create(SwipeMenu menu) {
@@ -114,7 +110,7 @@ public class MainActivity extends AppCompatActivity
                         // camera
                         break;*/
                 }
-                // false : close the menu; true : not close the menu
+                // false: close the menu; true: don't close the menu.
                 return false;
             }
         });
@@ -128,20 +124,19 @@ public class MainActivity extends AppCompatActivity
                 stocksView.smoothOpenMenu(position);
             }
         });
-        // Initialize toolbar, navigation drawer, floation action button.
+        // Initialize toolbar, navigation drawer, floating action button.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setRippleColor(Color.rgb(153, 31, 0));
-                fab.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        SearchStockFragment newF = new SearchStockFragment();
-                        android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        DialogFragment newFragment = SearchStockFragment.newInstance();
-                        newFragment.show(transaction, "fragment_search_stock");
-                    }
-                });
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                DialogFragment newFragment = SearchStockFragment.newInstance();
+                newFragment.show(transaction, "fragment_search_stock");
+            }
+        });
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
@@ -168,19 +163,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onDestroy() {
-        accountManager.saveAccountStructure();
         super.onDestroy();
     }
 
     public void bindAdapterToCurrentFeed() {
-        stocksView.setAdapter(allAdapters.get(currentFeed.ordinal()));
+        StockPreviewAdapter adapter = allAdapters.get(currentFeed.ordinal());
+        stocksView.setAdapter(adapter);
+        //adapter.notifyDataSetChanged();
         stocksView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ((App) getApplicationContext()).setDisplayStock(allFeeds.
-                        get(currentFeed.ordinal()).get(position));
-                StockViewFragment newF = new StockViewFragment();
-                android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                App.setDisplayStock(allFeeds.get(currentFeed.ordinal()).get(position));
+                android.support.v4.app.FragmentTransaction transaction =
+                                        getSupportFragmentManager().beginTransaction();
                 DialogFragment newFragment = StockViewFragment.newInstance();
                 newFragment.show(transaction, "fragment_stock_view");
             }
@@ -190,7 +185,7 @@ public class MainActivity extends AppCompatActivity
     public class FeedRefreshTask extends AsyncTask<String, Void, String> {
         private URL url;
         private feedId id;
-        private File networkReplyFile = null;
+        private File temporaryCacheFile = null;
 
         public FeedRefreshTask(String url, feedId id) throws MalformedURLException {
             this.url = new URL(url);
@@ -204,8 +199,8 @@ public class MainActivity extends AppCompatActivity
                 URLConnection connection = url.openConnection();
                 connection.connect();
                 InputStream input = new BufferedInputStream(url.openStream(), 10000);
-                networkReplyFile = new File(getCacheDir(), "tempfile"+id.ordinal()+".csv");
-                OutputStream output = new FileOutputStream(networkReplyFile.getPath());
+                temporaryCacheFile = new File(getCacheDir(), "tempfile"+id.ordinal()+".csv");
+                OutputStream output = new FileOutputStream(temporaryCacheFile.getPath());
                 byte data[] = new byte[1024];
                 while ((count = input.read(data)) != -1) {
                     output.write(data, 0, count);
@@ -230,7 +225,7 @@ public class MainActivity extends AppCompatActivity
             String[] values;
             int index;
             try {
-                reader = new BufferedReader(new FileReader(networkReplyFile));
+                reader = new BufferedReader(new FileReader(temporaryCacheFile));
                 while ((record = reader.readLine()) != null) {
                     values = record.split(",");
                     index = findStockIndexBySymbol(values[0].substring(
@@ -238,7 +233,8 @@ public class MainActivity extends AppCompatActivity
                     if(index == -1) {
                         continue;
                     }
-                    updateStock(index, values, id);
+                    Stock stock = allFeeds.get(id.ordinal()).get(index);
+                    stock.updateStock(values);
                 }
                 reader.close();
             } catch (FileNotFoundException e) {
@@ -264,26 +260,13 @@ public class MainActivity extends AppCompatActivity
         for(Stock stock : feed) {
             list.add(stock.getSymbol());
         }
-        url = buildYahooFinanceURL(list, queryFlagsString);
+        url = buildYahooFinanceURL(list, App.getQueryFlagsString());
         try {
             task = new FeedRefreshTask(url, id);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        startMyRefreshTask(task);          // Task will update UI on post-execute.
-    }
-
-    public void updateStock(int stockIndex, String[] values, feedId currentFeed) {
-        Stock stock = allFeeds.get(currentFeed.ordinal()).get(stockIndex);
-        int i = 0;
-        for(String flag : queryFlagsList) {
-            if(flag.equals("x")) {
-                i++;
-                continue;
-            }
-            stock.setValue(values[i], flag);
-            i++;
-        }
+        startRefreshTask(task);          // Task will update UI on post-execute.
     }
 
     public int findStockIndexBySymbol(String searchSymbol, feedId currentFeed) {
@@ -297,31 +280,9 @@ public class MainActivity extends AppCompatActivity
         return -1;
     }
 
-    public void initializeQueryFlags() {
-        queryFlagsList = new ArrayList<>();
-        queryFlagsList.add("s");
-        queryFlagsList.add("a");
-        queryFlagsList.add("b");
-        queryFlagsList.add("c1");
-        queryFlagsList.add("p2");
-        queryFlagsList.add("v");
-        queryFlagsList.add("x");
-        queryFlagsList.add("j1");
-        queryFlagsList.add("g");
-        queryFlagsList.add("h");
-        queryFlagsList.add("e");
-        queryFlagsList.add("r1");
-        queryFlagsList.add("d");
-        StringBuilder builder = new StringBuilder();
-        for(String flag : queryFlagsList) {
-            builder.append(flag);
-        }
-        queryFlagsString = builder.toString();
-    }
-
     public void initializeFeedsAndAdapters() {
-        watchFeed = new ArrayList<Stock>();
-        ownedFeed = new ArrayList<Stock>();
+        watchFeed = App.watchFeed;
+        ownedFeed = App.ownedFeed;
         allFeeds = new ArrayList<ArrayList<Stock>>();
         allFeeds.add(watchFeed);                //index=0
         allFeeds.add(ownedFeed);                //index=1
@@ -333,18 +294,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void importCurrentAccountFeed() {
-        if(currentAccount == null || watchFeed == null || ownedFeed == null) return;
-        ArrayList<Stock> accountFeedList;
-        ArrayList<Stock> displayFeedList;
-        accountFeedList = currentAccount.getWatchedStocks();
-        displayFeedList = allFeeds.get(0);
-        for(Stock stock : accountFeedList) {
-            displayFeedList.add(stock);
+        if(currentAccount == null || watchFeed == null || ownedFeed == null) {
+            return;
         }
-        accountFeedList = currentAccount.getOwnedStocks();
-        displayFeedList = allFeeds.get(1);
-        for(Stock stock : accountFeedList) {
-            displayFeedList.add(stock);
+        ArrayList<Stock> watchedFeedList = allFeeds.get(0);
+        for(Stock stock : currentAccount.getWatchedStocks()) {
+            watchedFeedList.add(stock);
+        }
+        ArrayList<Stock> ownedFeedList = allFeeds.get(1);
+        for(PurchasedStock stock : currentAccount.getOwnedStocks()) {
+            ownedFeedList.add(stock);
         }
     }
 
@@ -355,8 +314,8 @@ public class MainActivity extends AppCompatActivity
             return true;
         } else if(item.getItemId() == R.id.clear_all) {
             currentAccount.getWatchedStocks().clear();
-            allFeeds.get(feedId.WATCH_FEED.ordinal()).clear();
-            refreshFeed(feedId.WATCH_FEED);
+            allFeeds.get(currentFeed.ordinal()).clear();
+            refreshFeed(currentFeed);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -393,7 +352,10 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            accountManager.saveAccountStructure();
+            finish();
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
         }
     }
 

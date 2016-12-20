@@ -9,44 +9,36 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import static net.fahoum.virtualportfolio.Utility.getDateAsString;
+import static net.fahoum.virtualportfolio.Transaction.TransactionType;
 
 public class Account {
     private Boolean loggedInFlag;
     private String name = "";
     private String creationDate = null;
     private float balance = 0;
-    private ArrayList<Transaction> purchases = null;
-    private ArrayList<Transaction> sales = null;
     private ArrayList<Stock> watchedStocks = null;
-    private ArrayList<Stock> ownedStocks = null;
-    private ArrayList<Integer> ownedStocksAmounts = null;
+    private ArrayList<PurchasedStock> ownedStocks = null;
 
 
     // Debug constructor
     public Account(String name) {
         this.name = name;
         this.balance = 100000;         //Generous
-        purchases = new ArrayList<>();
-        sales = new ArrayList<>();
         creationDate = getDateAsString();
         watchedStocks = new ArrayList<>();
         ownedStocks = new ArrayList<>();
-        ownedStocksAmounts = new ArrayList<>();
         loggedInFlag = true;
     }
 
     public Account(String name, String creationDate, String balance,
                    boolean loggedInFlag, ArrayList<Stock> watchedList,
-                   ArrayList<Stock> ownedList, ArrayList<Integer> ownedAmountsList) {
+                   ArrayList<PurchasedStock> ownedList) {
         this.name = name;
         this.creationDate = creationDate;
         this.balance = Float.valueOf(balance);
         this.loggedInFlag = loggedInFlag;
-        purchases = new ArrayList<>();
-        sales = new ArrayList<>();
         watchedStocks = watchedList;
         ownedStocks = ownedList;
-        ownedStocksAmounts = ownedAmountsList;
     }
 
     public String getName() {
@@ -57,23 +49,11 @@ public class Account {
         return balance;
     }
 
-    public ArrayList<Transaction> getPurchases() {
-        return purchases;
-    }
-
-    public ArrayList<Transaction> getSales() {
-        return sales;
-    }
-
     public String getCreationDate() {
         return creationDate;
     }
 
-    public ArrayList<Integer> getOwnedStocksAmounts() {
-        return ownedStocksAmounts;
-    }
-
-    public ArrayList<Stock> getOwnedStocks() {
+    public ArrayList<PurchasedStock> getOwnedStocks() {
         return ownedStocks;
     }
 
@@ -107,19 +87,20 @@ public class Account {
             writer.write(creationDate+"\n");
             writer.write(Float.toString(balance)+"\n");
             writer.write("watched stocks line\n");
-            for(int i = 0; i < watchedStocks.size(); i++) {
-                writer.write(watchedStocks.get(i).getName()+"\n");
-                writer.write(watchedStocks.get(i).getSymbol()+"\n");
-                writer.write(watchedStocks.get(i).getExchange()+"\n");
+            for(Stock stock : watchedStocks) {
+                writer.write(stock.getName()+"\n");
+                writer.write(stock.getSymbol()+"\n");
+                writer.write(stock.getExchange()+"\n");
             }
-            writer.write("owned stocks line");
-            for(int j = 0; j < ownedStocks.size(); j++) {
-                writer.write(ownedStocks.get(j).getName()+"\n");
-                writer.write(ownedStocks.get(j).getSymbol()+"\n");
-                writer.write(ownedStocks.get(j).getExchange()+"\n");
-                writer.write(Integer.toString(ownedStocksAmounts.get(j))+"\n");
+            writer.write("owned stocks line\n");
+            for(PurchasedStock stock : ownedStocks) {
+                writer.write(stock.getName()+"\n");
+                writer.write(stock.getSymbol()+"\n");
+                writer.write(stock.getExchange()+"\n");
+                writer.write(stock.getAmount()+"\n");
+                //TODO: backup transaction history
+
             }
-            //TODO: backup transaction history
             writer.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -128,65 +109,28 @@ public class Account {
         }
     }
 
-    /*
-    public void buyShares(String symbol, int amount, float price) {
-        if(amount*price > balance) return;
-        Transaction trans = new Transaction(amount, price, getDateAsString(), symbol);
-        purchases.add(trans);
-        if(!ownedStocks.contains(symbol)) {
-            ownedStocks.add(symbol);
-            ownedStocksAmounts.add(amount);
-        } else {
-            Integer prevAmount = ownedStocksAmounts.get(ownedStocks.indexOf(symbol));
-            prevAmount += amount;
+    public void performTransaction(Stock stock, TransactionType type, int amount, float currentBalance) {
+        PurchasedStock newStock = null;
+        boolean foundFlag = false;
+        for(PurchasedStock ownedStock : ownedStocks) {
+            if(ownedStock.getSymbol().equals(stock.getSymbol())) {  // Already traded this stock.
+                newStock = ownedStock;
+                foundFlag = true;
+                break;
+            }
         }
-        balance -= amount*price;
-    }
-
-    public void sellShares(String symbol, int amount, float price) {
-        if(!ownedStocks.contains(symbol)) return;
-        int index = ownedStocks.indexOf(symbol);
-        Integer prevAmount = ownedStocksAmounts.get(index);
-        if(prevAmount < amount) return;
-        Transaction trans = new Transaction(amount, price, getDateAsString(), symbol);
-        sales.add(trans);
-        if(prevAmount == amount) {
-            ownedStocks.remove(index);
-            ownedStocksAmounts.remove(index);
-        } else {
-            prevAmount -= amount;
+        if(!foundFlag) {          // First time trading this stock.
+            newStock = new PurchasedStock(stock);
         }
-        balance += amount*price;
-    }
-*/
-
-    public class Transaction {
-        private int amount;
-        private float price;
-        private String date;
-        private String symbol;
-
-        public Transaction(int count, float price, String date, String symbol) {
-            this.amount = count;
-            this.price = price;
-            this.date = date;
-            this.symbol = symbol;
-        }
-
-        public int getAmount() {
-            return amount;
-        }
-
-        public float getPrice() {
-            return price;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public String getSymbol() {
-            return symbol;
+        float result = newStock.performTransaction(type, amount, currentBalance);
+        if(result == 0) {   // Transaction failed.
+;           return;
+        } else {            // Transaction succeeded.
+            balance += result;
+            if(!foundFlag) {
+                ownedStocks.add(newStock);
+                App.ownedFeed.add(newStock);
+            }
         }
     }
 }
