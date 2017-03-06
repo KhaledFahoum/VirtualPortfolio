@@ -17,7 +17,7 @@ public class Account {
     private String creationDate = null;
     private float balance = 0;
     private ArrayList<Stock> watchedStocks = null;
-    private ArrayList<PurchasedStock> ownedStocks = null;
+    private ArrayList<Stock> ownedStocks = null;
 
 
     // Debug constructor
@@ -32,7 +32,7 @@ public class Account {
 
     public Account(String name, String creationDate, String balance,
                    boolean loggedInFlag, ArrayList<Stock> watchedList,
-                   ArrayList<PurchasedStock> ownedList) {
+                   ArrayList<Stock> ownedList) {
         this.name = name;
         this.creationDate = creationDate;
         this.balance = Float.valueOf(balance);
@@ -53,7 +53,7 @@ public class Account {
         return creationDate;
     }
 
-    public ArrayList<PurchasedStock> getOwnedStocks() {
+    public ArrayList<Stock> getOwnedStocks() {
         return ownedStocks;
     }
 
@@ -92,14 +92,13 @@ public class Account {
                 writer.write(stock.getSymbol()+"\n");
                 writer.write(stock.getExchange()+"\n");
             }
-            writer.write("owned stocks line\n");
-            for(PurchasedStock stock : ownedStocks) {
+            writer.write("owned stocks line");
+            for(Stock stock : ownedStocks) {
                 writer.write(stock.getName()+"\n");
                 writer.write(stock.getSymbol()+"\n");
                 writer.write(stock.getExchange()+"\n");
                 writer.write(stock.getAmount()+"\n");
                 //TODO: backup transaction history
-
             }
             writer.close();
         } catch (FileNotFoundException e) {
@@ -110,26 +109,26 @@ public class Account {
     }
 
     public void performTransaction(Stock stock, TransactionType type, int amount, float currentBalance) {
-        PurchasedStock newStock = null;
-        boolean foundFlag = false;
-        for(PurchasedStock ownedStock : ownedStocks) {
+        Stock targetStock = null;
+        boolean newStockFlag = true;
+        for(Stock ownedStock : ownedStocks) {
             if(ownedStock.getSymbol().equals(stock.getSymbol())) {  // Already traded this stock.
-                newStock = ownedStock;
-                foundFlag = true;
+                targetStock = ownedStock;
+                newStockFlag = false;
                 break;
             }
         }
-        if(!foundFlag) {          // First time trading this stock.
-            newStock = new PurchasedStock(stock);
+        if(newStockFlag == true) {
+            targetStock = stock;
         }
-        float result = newStock.performTransaction(type, amount, currentBalance);
+        float result = targetStock.performTransaction(type, amount, currentBalance);
         if(result == 0) {   // Transaction failed.
 ;           return;
         } else {            // Transaction succeeded.
             balance += result;
-            if(!foundFlag) {
-                ownedStocks.add(newStock);
-                App.ownedFeed.add(newStock);
+            if(newStockFlag == true) {
+                ownedStocks.add(targetStock);
+                App.ownedFeed.add(targetStock);
             }
         }
     }

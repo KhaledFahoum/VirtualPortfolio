@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity
             watchedFeedList.add(stock);
         }
         ArrayList<Stock> ownedFeedList = allFeeds.get(1);
-        for(PurchasedStock stock : currentAccount.getOwnedStocks()) {
+        for(Stock stock : currentAccount.getOwnedStocks()) {
             ownedFeedList.add(stock);
         }
     }
@@ -368,7 +368,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDataPass(Stock result) {
-        int index = findStockIndexBySymbol(result.getSymbol(), currentFeed);
+        int index = findStockIndexBySymbol(result.getSymbol(), feedId.WATCH_FEED);
         if(index != -1) {
             return;
         }

@@ -9,10 +9,10 @@ public class App extends Application {
     private static Stock currentlyDisplayedStock = null;
     private static Context appContext;
     private static Account currentAccount = null;
-    private static int PRECISION = 2;
     private static String queryFlagsString = null;
     private static ArrayList<String> queryFlagsList = null;
     public static ArrayList<Stock> watchFeed = null, ownedFeed = null;
+    public static int PRECISION = 2;
 
     @Override
     public void onCreate() {

@@ -45,7 +45,7 @@ public class AccountManager {
         accountsList = new ArrayList<Account>();
         Account recoveredAccount, lastLoggedAccount = null;
         ArrayList<Stock> watchList;
-        ArrayList<PurchasedStock> ownedList;
+        ArrayList<Stock> ownedList;
         BufferedReader reader;
         String record, lastLogIn, name, creationDate, balance, stockName, symbol, amount, exchange;
         Stock stock;
@@ -63,7 +63,7 @@ public class AccountManager {
             // else ->  record == "account line"
             while ((record = reader.readLine()) != null) {
                 watchList = new ArrayList<Stock>();
-                ownedList = new ArrayList<PurchasedStock>();
+                ownedList = new ArrayList<Stock>();
                 lastLogIn = record.replace("\n", "");
                 record = reader.readLine();
                 name = record.replace("\n", "");
@@ -91,7 +91,7 @@ public class AccountManager {
                 if(record != null) {
                     record = record.replace("\n", "");
                 }
-                while(record != null && !record.equals("account line")) {
+                while(record != null && !record.equals("account line")) { // there's an owned stock
                     stockName = record;
                     record = reader.readLine();
                     symbol = record.replace("\n", "");
@@ -102,9 +102,8 @@ public class AccountManager {
                     stock = new Stock(symbol);
                     stock.setValue(stockName, "n");
                     stock.setValue(exchange, "x");
-                    purchasedStock = new PurchasedStock(stock);
-                    purchasedStock.setAmount(Integer.parseInt(amount));
-                    ownedList.add(purchasedStock);
+                    stock.setAmount(Integer.parseInt(amount));
+                    ownedList.add(stock);
                     record = reader.readLine();
                     if(record != null) {
                         record = record.replace("\n", "");

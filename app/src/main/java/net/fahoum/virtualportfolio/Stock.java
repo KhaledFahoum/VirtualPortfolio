@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 
+import static net.fahoum.virtualportfolio.App.PRECISION;
 import static net.fahoum.virtualportfolio.Utility.*;
 
 public class Stock {
@@ -30,9 +31,14 @@ public class Stock {
     private String changePercent = "";
     private String volume = "";
     private String marketCap = "";
+    private ArrayList<Transaction> transactions = null;
+    private int amount = 0;
+
 
     public Stock(String symbol) {
         this.symbol = symbol;
+        this.amount = 0;
+        this.transactions = new ArrayList<>();
     }
 
     public Stock() {
@@ -54,6 +60,8 @@ public class Stock {
         this.changePercent = stock.changePercent;
         this.volume = stock.volume;
         this.marketCap = stock.marketCap;
+        this.amount = 0;
+        this.transactions = new ArrayList<>();
     }
 
     public void refreshStock() {
@@ -84,9 +92,39 @@ public class Stock {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
+
+    /* Returns the change in account balance, or 0 in case of failure. */
+    public float performTransaction(Transaction.TransactionType type, int amount, float currentBalance) {
+        if(amount < 1 || this.getBidPrice().equals("") || this.getAskPrice().equals("")) {
+            return 0;
+        }
+        if(type == Transaction.TransactionType.BUY_OP) {
+            float bidPrice = Float.parseFloat(this.getBidPrice());
+            float totalPurchasePrice = bidPrice * amount;
+            if(totalPurchasePrice > currentBalance) {
+                return 0;   // Account lacks funds to buy.
+            } else {
+                this.amount += amount;
+                transactions.add(new Transaction(type, amount, bidPrice, getDateAsString(), this.getSymbol()));
+                return -1 * totalPurchasePrice;
+            }
+        }
+        if(type == Transaction.TransactionType.SELL_OP) {
+            float askPrice = Float.parseFloat(this.getAskPrice());
+            if(this.amount < amount) {
+                return 0;   // Account lacks shares to sell.
+            } else {
+                this.amount -= amount;
+                transactions.add(new Transaction(type, amount, askPrice, getDateAsString(), this.getSymbol()));
+                return askPrice * amount;
+            }
+        }
+        return 0;   // Just in case.
+    }
+
+    /* Calls 'setValue()' for each Stock member field. */
     public void updateStock(String[] values) {
         int i = 0;
         for(String flag : App.getQueryFlagsList()) {
@@ -111,16 +149,16 @@ public class Stock {
                 exchange = value;
                 break;
             case "p2":
-                changePercent = getNDecimals(trimQuotes(value), 2)+"%";
+                changePercent = getNDecimals(trimQuotes(value), PRECISION)+"%";
                 break;
             case "c1":
-                change = getNDecimals(value, 2);
+                change = getNDecimals(value, PRECISION);
                 break;
             case "a":
-                askPrice = value;
+                askPrice = getNDecimals(value, PRECISION);
                 break;
             case "b":
-                bidPrice = value;
+                bidPrice = getNDecimals(value, PRECISION);;
                 break;
             case "r1":
                 dividendPayDate = convertDateToDMY(trimQuotes(value));
@@ -149,6 +187,10 @@ public class Stock {
             default:
                 return;
         }
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 
     public String getSymbol() {
@@ -205,5 +247,13 @@ public class Stock {
 
     public String getEarningsPerShare() {
         return earningsPerShare;
+    }
+
+    public ArrayList<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public int getAmount() {
+        return amount;
     }
 }

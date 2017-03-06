@@ -115,20 +115,10 @@ public final class Utility {
     }
 
     static String getNDecimals(String num, int n) {
-        char[] vals = num.toCharArray();
-        int index = -1;
-        for(int i = 0; i < vals.length; i++) {
-            if(index == -1) {       //haven't found decimal point
-                if(vals[i] == '.')
-                    index = 0;
-            } else {                //already found decimal point
-                index++;
-                if(index == n) {    //finished, we want up to 'i' substring
-                    index = i;
-                    break;
-                }
-            }
+        if(n == 0) {
+            return num.substring(0, num.indexOf("."));
+        } else {
+            return num.substring(0, num.indexOf(".")+n+1); //+1 because endIndex is exclusive.
         }
-        return new String(vals, 0, index+1);
     }
 }
