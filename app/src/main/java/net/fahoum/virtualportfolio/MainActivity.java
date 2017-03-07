@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity
     private StockPreviewAdapter ownedFeedAdapter = null;
     private ArrayList<StockPreviewAdapter> allAdapters = null;
     private FeedRefreshTask task = null;
-    private enum feedId { WATCH_FEED, OWNED_FEED };
-    private feedId currentFeed;
+    public static enum feedId { WATCH_FEED, OWNED_FEED };
+    public static feedId currentFeed;
     private com.baoyz.swipemenulistview.SwipeMenuListView stocksView;
     private String currentDate = "";
     private AccountManager accountManager;

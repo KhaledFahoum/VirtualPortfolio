@@ -17,20 +17,20 @@ import static net.fahoum.virtualportfolio.App.PRECISION;
 import static net.fahoum.virtualportfolio.Utility.*;
 
 public class Stock {
-    private String symbol = "";
-    private String exchange = "";
-    private String name = "";
-    private String askPrice = "";
-    private String bidPrice = "";
-    private String dividendPayDate = "";
-    private String dividendPerShare = "0";
-    private String earningsPerShare = "0";
-    private String change = "";
-    private String daysHigh = "";
-    private String daysLow = "";
-    private String changePercent = "";
-    private String volume = "";
-    private String marketCap = "";
+    private String symbol = DATA_NOT_AVAILABLE;
+    private String exchange = DATA_NOT_AVAILABLE;
+    private String name = DATA_NOT_AVAILABLE;
+    private String askPrice = DATA_NOT_AVAILABLE;
+    private String bidPrice = DATA_NOT_AVAILABLE;
+    private String dividendPayDate = DATA_NOT_AVAILABLE;
+    private String dividendPerShare = DATA_NOT_AVAILABLE;
+    private String earningsPerShare = DATA_NOT_AVAILABLE;
+    private String change = DATA_NOT_AVAILABLE;
+    private String changePercent = DATA_NOT_AVAILABLE;
+    private String daysHigh = DATA_NOT_AVAILABLE;
+    private String daysLow = DATA_NOT_AVAILABLE;
+    private String volume = DATA_NOT_AVAILABLE;
+    private String marketCap = DATA_NOT_AVAILABLE;
     private ArrayList<Transaction> transactions = null;
     private int amount = 0;
 
@@ -97,7 +97,8 @@ public class Stock {
 
     /* Returns the change in account balance, or 0 in case of failure. */
     public float performTransaction(Transaction.TransactionType type, int amount, float currentBalance) {
-        if(amount < 1 || this.getBidPrice().equals("") || this.getAskPrice().equals("")) {
+        if(amount < 1 || this.getBidPrice().equals(DATA_NOT_AVAILABLE) ||
+                        this.getAskPrice().equals(DATA_NOT_AVAILABLE)) {
             return 0;
         }
         if(type == Transaction.TransactionType.BUY_OP) {
@@ -138,7 +139,7 @@ public class Stock {
     }
 
     public void setValue(String value, String flag) {
-        if(value.equals("N/A")) {
+        if(value.equals(DATA_NOT_AVAILABLE)) {
             return;
         }
         switch(flag) {

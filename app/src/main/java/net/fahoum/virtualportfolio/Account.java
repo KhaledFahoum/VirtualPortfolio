@@ -92,12 +92,12 @@ public class Account {
                 writer.write(stock.getSymbol()+"\n");
                 writer.write(stock.getExchange()+"\n");
             }
-            writer.write("owned stocks line");
+            writer.write("owned stocks line\n");
             for(Stock stock : ownedStocks) {
                 writer.write(stock.getName()+"\n");
                 writer.write(stock.getSymbol()+"\n");
                 writer.write(stock.getExchange()+"\n");
-                writer.write(stock.getAmount()+"\n");
+                writer.write(String.valueOf(stock.getAmount())+"\n");
                 //TODO: backup transaction history
             }
             writer.close();

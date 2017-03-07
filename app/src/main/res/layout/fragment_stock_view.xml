@@ -3,61 +3,253 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/stock_view"
     tools:context=".StockViewFragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:minWidth="300dp"
-    android:minHeight="400dp"
     android:orientation="vertical"
     android:background="@drawable/secondary_background_gradient">
     <LinearLayout
         android:id="@+id/upper_stock_view"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:orientation="vertical"
-        android:gravity="center">
-        <TextView
-            android:id="@+id/stock_name"
-            android:paddingTop="15dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
+        android:layout_height="130dp"
+        android:orientation="horizontal"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="20dp"
+        android:weightSum="12">
+
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/upper_left_stock_view"
+            android:layout_weight="7"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:gravity="center_horizontal|top">
             <TextView
-                android:id="@+id/stock_symbol"
+                android:id="@+id/stock_name"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=":"
-                android:textSize="25dp"/>
-            <TextView
-                android:id="@+id/stock_exchange"
+                android:layout_height="wrap_content"/>
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                />
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/stock_symbol"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=":"
+                    android:textSize="25dp"/>
+                <TextView
+                    android:id="@+id/stock_exchange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/upper_right_stock_view"
+            android:layout_weight="5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal|top">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="1dp">
+                <TextView
+                    android:id="@+id/ask_price_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ask: "
+                    android:textSize="18dp"/>
+                <TextView
+                    android:id="@+id/stock_ask_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="1dp">
+                <TextView
+                    android:id="@+id/stock_change"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/stock_change_percent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="1dp">
+                <TextView
+                    android:id="@+id/bid_price_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="bid: "
+                    android:textSize="18dp"/>
+                <TextView
+                    android:id="@+id/stock_bid_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="5dp">
+                <TextView
+                    android:id="@+id/price_range_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="day's range: "
+                    android:textSize="16dp"
+                    android:layout_marginBottom="1dp"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/stock_low_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" - "/>
+                    <TextView
+                        android:id="@+id/stock_high_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/volume_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="volume: "
+                    android:textSize="16dp"/>
+                <TextView
+                    android:id="@+id/stock_volume"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/middle_stock_view"
         android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:orientation="horizontal"
-        android:gravity="center">
-        <TextView
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:orientation="horizontal">
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:id="@+id/middle_left_stock_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="2dp">
+                    <TextView
+                        android:id="@+id/dividend_per_share_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="dividend per share: "
+                        android:textSize="16dp"/>
+                    <TextView
+                        android:id="@+id/stock_dividend_per_share"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="2dp">
+                    <TextView
+                        android:id="@+id/dividend_pay_date_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="dividend pay date: "
+                        android:textSize="16dp"/>
+                    <TextView
+                        android:id="@+id/stock_dividend_pay_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="2dp">
+                    <TextView
+                        android:id="@+id/earnings_per_share_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="earnings per share: "
+                        android:textSize="16dp"/>
+                    <TextView
+                        android:id="@+id/stock_earnings_per_share"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="2dp">
+                    <TextView
+                        android:id="@+id/market_capital_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="market capital: "
+                        android:textSize="16dp"/>
+                    <TextView
+                        android:id="@+id/stock_market_capital"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/middle_right_stock_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MIDDLE PART"/>
+            android:orientation="horizontal">
+        </LinearLayout>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/lower_stock_view"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_marginBottom="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
         <LinearLayout
             android:id="@+id/lower_stock_view_container"
             android:layout_width="wrap_content"
@@ -65,24 +257,58 @@
             android:orientation="horizontal">
 
             <LinearLayout
-                android:id="@+id/lower_stock_view_left"
+                android:id="@+id/lower_left_stock_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingEnd="40dp">
-                <Button
+                android:paddingEnd="20dp">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/news_button"
-                    android:text="news"/>
-                <Button
+                    android:orientation="horizontal">
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/google_button"
+                        android:text="GOOGLE"/>
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/yahoo_button"
+                        android:text="YAHOO!"/>
+                </LinearLayout>
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/reddit_button"
-                    android:text="reddit"/>
+                    android:orientation="horizontal">
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/reddit_button"
+                        android:text="REDDIT"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="1dp"
+                        android:gravity="center"
+                        android:layout_marginStart="10dp">
+                        <TextView
+                            android:id="@+id/amount_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="owned: "
+                            android:textSize="18dp"/>
+                        <TextView
+                            android:id="@+id/stock_amount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
             <LinearLayout
-                android:id="@+id/lower_stock_view_right"
+                android:id="@+id/lower_right_stock_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">

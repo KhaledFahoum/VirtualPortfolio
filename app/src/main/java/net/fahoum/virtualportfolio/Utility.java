@@ -2,6 +2,7 @@ package net.fahoum.virtualportfolio;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -12,6 +13,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 public final class Utility {
+
+    public static int GREEN_COLOR = Color.rgb(50, 90, 0),
+                        RED_COLOR = Color.rgb(204, 0, 0),
+                        GRAY_COLOR = Color.rgb(112, 128, 144),
+                        COPPER_COLOR = Color.rgb(184, 134, 11);
+    public static String DATA_NOT_AVAILABLE = "N/A";
+
 
     static void overrideFont(Context context, String defaultFontNameToOverride, String customFontFileNameInAssets) {
         try {

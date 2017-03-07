@@ -12,12 +12,14 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
+
+import static net.fahoum.virtualportfolio.MainActivity.currentFeed;
 import static net.fahoum.virtualportfolio.Utility.*;
 
 public class StockPreviewAdapter extends ArrayAdapter<Stock> {
     private int previewType; // 0 = 'fragment_stock_view', 1 = 'search_list'
     private int MAX_EXCHANGE_LENGTH = 8;
-    private int MAX_NAME_LENGTH = 40;
+    private int MAX_NAME_LENGTH = 35;
     private int MAX_SYMBOL_LENGTH = 12;
 
     public StockPreviewAdapter(Context context, ArrayList<Stock> array, int type) {
@@ -70,42 +72,54 @@ public class StockPreviewAdapter extends ArrayAdapter<Stock> {
             layout = (LinearLayout) convertView.findViewById(R.id.stock_prev_right_layout);
             layout.setPadding(0, DPtoPixel(5, getContext()), 0,  0);
 
-            if(!askPriceStr.equals("") && !bidPriceStr.equals("")) {
+            if(!askPriceStr.equals(DATA_NOT_AVAILABLE) && !bidPriceStr.equals(DATA_NOT_AVAILABLE)) {
                 bidPrice.setText("$"+bidPriceStr);
                 askPrice.setText("$"+askPriceStr);
             } else {
-                bidPrice.setText("?");
-                askPrice.setText("?");
+                bidPrice.setText(DATA_NOT_AVAILABLE);
+                askPrice.setText(DATA_NOT_AVAILABLE);
             }
-            if(!changeStr.equals("N/A") && !changePercentStr.equals("N/A")
-                    && !changeStr.equals("") && !changePercentStr.equals("")) {
-                changePercent.setText("("+changePercentStr+")");
-                change.setText(changeStr);
+            changePercent.setText("("+changePercentStr+")");
+            change.setText(changeStr);
+            if(!changeStr.equals(DATA_NOT_AVAILABLE) &&
+                    !changePercentStr.equals(DATA_NOT_AVAILABLE)) {
                 if(changeStr.charAt(0) == '+') {
-                    changePercent.setTextColor(Color.rgb(50, 90, 0));
-                    change.setTextColor(Color.rgb(50, 90, 0));
+                    changePercent.setTextColor(GREEN_COLOR);
+                    change.setTextColor(GREEN_COLOR);
                 } else if(changeStr.charAt(0) == '-') {
-                    changePercent.setTextColor(Color.rgb(204, 0, 0));
-                    change.setTextColor(Color.rgb(204, 0, 0));
+                    changePercent.setTextColor(RED_COLOR);
+                    change.setTextColor(RED_COLOR);
                 }
             }
+            TextView view = (TextView)convertView.findViewById(R.id.stock_prev_amount);
+            if(currentFeed == MainActivity.feedId.OWNED_FEED) {
+                view.setText(String.valueOf(stock.getAmount()));
+            } else {
+                view.setVisibility(View.GONE);
+                view = (TextView)convertView.findViewById(R.id.stock_prev_amount_title);
+                view.setVisibility(View.GONE);
+            }
         } else if(previewType == 1) {           // Search preview
-            askPrice.setVisibility(View.INVISIBLE);
-            bidPrice.setVisibility(View.INVISIBLE);
+            TextView view = (TextView)convertView.findViewById(R.id.stock_prev_amount);
+            view.setVisibility(View.GONE);
+            view = (TextView)convertView.findViewById(R.id.stock_prev_amount_title);
+            view.setVisibility(View.GONE);
+            askPrice.setVisibility(View.GONE);
+            bidPrice.setVisibility(View.GONE);
             askPrice = (TextView) convertView.findViewById(R.id.stock_prev_ask_price_text);
             bidPrice = (TextView) convertView.findViewById(R.id.stock_prev_bid_price_text);
-            askPrice.setVisibility(View.INVISIBLE);
-            bidPrice.setVisibility(View.INVISIBLE);
+            askPrice.setVisibility(View.GONE);
+            bidPrice.setVisibility(View.GONE);
             int num = position % 2;
             if(num == 0) {
-                symbol.setTextColor(Color.rgb(112, 128, 144));
-                name.setTextColor(Color.rgb(112, 128, 144));
-                exchange.setTextColor(Color.rgb(112, 128, 144));
+                symbol.setTextColor(GRAY_COLOR);
+                name.setTextColor(GRAY_COLOR);
+                exchange.setTextColor(GRAY_COLOR);
 
             } else {
-                symbol.setTextColor(Color.rgb(184, 134, 11));
-                name.setTextColor(Color.rgb(184, 134, 11));
-                exchange.setTextColor(Color.rgb(184, 134, 11));
+                symbol.setTextColor(COPPER_COLOR);
+                name.setTextColor(COPPER_COLOR);
+                exchange.setTextColor(COPPER_COLOR);
             }
         }
         setFontAndSize(name, "fonts/ostrich-inline.ttf", 20);
