@@ -5,11 +5,9 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -27,12 +25,10 @@ import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static net.fahoum.virtualportfolio.Utility.*;
 
@@ -53,6 +49,8 @@ public class MainActivity extends AppCompatActivity
     private com.baoyz.swipemenulistview.SwipeMenuListView stocksView;
     private String currentDate = "";
     private AccountManager accountManager;
+    // units: milliseconds
+    private int FEED_REFRESH_INITIAL_DELAY = 1000*5, FEED_REFRESH_DELAY_INTERVAL = 1000*2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,6 +154,15 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+/*
+        // Setting up auto-refresh timer
+        Timer refreshTimer = new Timer("RefreshTimer", true);
+        refreshTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                refreshFeed(currentFeed);
+            }
+        }, FEED_REFRESH_INITIAL_DELAY, FEED_REFRESH_DELAY_INTERVAL); */
     }
 
     public void onDestroy() {
@@ -173,7 +180,7 @@ public class MainActivity extends AppCompatActivity
                 android.support.v4.app.FragmentTransaction transaction =
                                         getSupportFragmentManager().beginTransaction();
                 DialogFragment newFragment = StockViewFragment.newInstance();
-                newFragment.show(transaction, "fragment_stock_view");
+                newFragment.show(transaction, "fragment_stock_view_tag");
             }
         });
     }

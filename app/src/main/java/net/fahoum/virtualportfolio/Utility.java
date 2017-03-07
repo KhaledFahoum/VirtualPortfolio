@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -19,7 +18,9 @@ public final class Utility {
                         GRAY_COLOR = Color.rgb(112, 128, 144),
                         COPPER_COLOR = Color.rgb(184, 134, 11);
     public static String DATA_NOT_AVAILABLE = "N/A";
-
+    public static int PRECISION = 2;
+    public static String DEFAULT_FONT = "fonts/ostrich-black.ttf",
+                            NAME_FONT = "fonts/ostrich-inline.ttf";
 
     static void overrideFont(Context context, String defaultFontNameToOverride, String customFontFileNameInAssets) {
         try {

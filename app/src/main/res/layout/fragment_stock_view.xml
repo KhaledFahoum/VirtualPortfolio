@@ -1,6 +1,6 @@
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/stock_view"
     tools:context=".StockViewFragment"
     android:layout_width="wrap_content"
@@ -26,8 +26,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_horizontal|top">
-            <TextView
+            <me.grantland.widget.AutofitTextView
                 android:id="@+id/stock_name"
+                android:maxLines="2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
             <LinearLayout
@@ -45,6 +46,24 @@
                     android:textSize="25dp"/>
                 <TextView
                     android:id="@+id/stock_exchange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="1dp"
+                android:gravity="center"
+                android:layout_marginStart="10dp">
+                <TextView
+                    android:id="@+id/amount_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="owned: "
+                    android:textSize="18dp"/>
+                <TextView
+                    android:id="@+id/stock_amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
@@ -254,14 +273,13 @@
             android:id="@+id/lower_stock_view_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/lower_left_stock_view"
+                android:id="@+id/upper_lower_stock_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingEnd="20dp">
+                android:orientation="vertical">
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -276,52 +294,52 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/yahoo_button"
                         android:text="YAHOO!"/>
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/reddit_button"
                         android:text="REDDIT"/>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginBottom="1dp"
-                        android:gravity="center"
-                        android:layout_marginStart="10dp">
-                        <TextView
-                            android:id="@+id/amount_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="owned: "
-                            android:textSize="18dp"/>
-                        <TextView
-                            android:id="@+id/stock_amount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
-                    </LinearLayout>
                 </LinearLayout>
+                <io.apptik.widget.MultiSlider
+                    android:id="@+id/transaction_slider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:thumbNumber="1"
+                    app:stepsThumbsApart="5"
+                    app:drawThumbsApart="true"
+                    />
             </LinearLayout>
             <LinearLayout
-                android:id="@+id/lower_right_stock_view"
+                android:id="@+id/lower_lower_stock_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <Button
+                android:orientation="horizontal">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/sell_button"
-                    android:text="Sell"/>
+                    android:orientation="vertical"
+                    android:gravity="start|bottom">
+                    <EditText
+                        android:id="@+id/transaction_amount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        />
+                    <TextView
+                        android:id="@+id/shares_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="shares"
+                        android:layout_marginStart="25dp"
+                        android:textSize="15dp"/>
+
+                </LinearLayout>
                 <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/buy_button"
-                    android:text="Buy"/>
+                    android:layout_width="160dp"
+                    android:layout_height="70dp"
+                    android:id="@+id/transaction_button"
+                    android:layout_marginStart="40dp"
+                    android:text="transaction"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

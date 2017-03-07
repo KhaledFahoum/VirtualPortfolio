@@ -47,7 +47,8 @@ public class AccountManager {
         ArrayList<Stock> watchList;
         ArrayList<Stock> ownedList;
         BufferedReader reader;
-        String record, lastLogIn, name, creationDate, balance, stockName, symbol, amount, exchange;
+        String record, lastLogIn, name, creationDate, balance, stockName, symbol, amount,
+                exchange, investment, watched, owned;
         Stock stock;
         PurchasedStock purchasedStock;
         File file = new File(appContext.getFilesDir(), storageDataFilename);
@@ -71,27 +72,10 @@ public class AccountManager {
                 creationDate = record.replace("\n", "");
                 record = reader.readLine();
                 balance = record.replace("\n", "");
-                record = reader.readLine();         //intentional, to skip "watched stocks line"
+                record = reader.readLine();         //intentional, to skip "stocks line"
                 record = reader.readLine();
                 record = record.replace("\n", "");
-                while(!record.equals("owned stocks line")) {   // there's a watched stock
-                    stockName = record;
-                    record = reader.readLine();
-                    symbol = record.replace("\n", "");
-                    record = reader.readLine();
-                    exchange = record.replace("\n", "");
-                    stock = new Stock(symbol);
-                    stock.setValue(stockName, "n");
-                    stock.setValue(exchange, "x");
-                    watchList.add(stock);
-                    record = reader.readLine();
-                    record = record.replace("\n", "");
-                }
-                record = reader.readLine();
-                if(record != null) {
-                    record = record.replace("\n", "");
-                }
-                while(record != null && !record.equals("account line")) { // there's an owned stock
+                while(!record.equals("account line")) {   // there's a stock record
                     stockName = record;
                     record = reader.readLine();
                     symbol = record.replace("\n", "");
@@ -99,16 +83,41 @@ public class AccountManager {
                     exchange = record.replace("\n", "");
                     record = reader.readLine();
                     amount = record.replace("\n", "");
+                    record = reader.readLine();
+                    investment = record.replace("\n", "");
+                    record = reader.readLine();
+                    watched = record.replace("\n", "");
+                    record = reader.readLine();
+                    owned = record.replace("\n", "");
                     stock = new Stock(symbol);
                     stock.setValue(stockName, "n");
                     stock.setValue(exchange, "x");
                     stock.setAmount(Integer.parseInt(amount));
-                    ownedList.add(stock);
+                    stock.setInvestment(Float.parseFloat(investment));
+                    if(watched.equals("true")) {
+                        stock.watched = true;
+                        watchList.add(stock);
+                    } else {
+                        stock.watched = false;
+                    }
+                    if(owned.equals("true")) {
+                        stock.owned = true;
+                        ownedList.add(stock);
+                    } else {
+                        stock.owned = false;
+                    }
                     record = reader.readLine();
                     if(record != null) {
                         record = record.replace("\n", "");
+                    } else {
+                        break;
                     }
                 }
+                record = reader.readLine();
+                if(record != null) {
+                    record = record.replace("\n", "");
+                }
+
                 if(lastLogIn.equals("true")) {
                     recoveredAccount = new Account(name, creationDate, balance, true, watchList, ownedList);
                     lastLoggedAccount = recoveredAccount;

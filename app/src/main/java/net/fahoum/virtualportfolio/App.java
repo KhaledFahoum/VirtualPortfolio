@@ -12,7 +12,6 @@ public class App extends Application {
     private static String queryFlagsString = null;
     private static ArrayList<String> queryFlagsList = null;
     public static ArrayList<Stock> watchFeed = null, ownedFeed = null;
-    public static int PRECISION = 2;
 
     @Override
     public void onCreate() {
@@ -41,10 +40,6 @@ public class App extends Application {
 
     public static Context getAppContext() {
         return appContext;
-    }
-
-    public static int getPrecision() {
-        return PRECISION;
     }
 
     public static String getQueryFlagsString() {

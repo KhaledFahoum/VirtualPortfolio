@@ -3,4 +3,7 @@
     <color name="colorPrimary">#9C9C9C</color>
     <color name="colorPrimaryDark">#666666</color>
     <color name="colorAccent">#7A8B8B</color>
+    <color name="colorSell">#228B22</color>
+    <color name="colorBuy">#B22222</color>
+
 </resources>

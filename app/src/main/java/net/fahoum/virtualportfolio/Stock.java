@@ -1,19 +1,7 @@
 package net.fahoum.virtualportfolio;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 
-import static net.fahoum.virtualportfolio.App.PRECISION;
 import static net.fahoum.virtualportfolio.Utility.*;
 
 public class Stock {
@@ -33,12 +21,19 @@ public class Stock {
     private String marketCap = DATA_NOT_AVAILABLE;
     private ArrayList<Transaction> transactions = null;
     private int amount = 0;
-
+    private float investment = 0;
+    /* Each stock begins as a Watched stock, and if bought once,
+     * it becomes Owned forever. (to track transaction history)
+     * A Watched stock can be unwatched even if it's Owned too. */
+    public boolean watched = true, owned = false;
 
     public Stock(String symbol) {
         this.symbol = symbol;
         this.amount = 0;
+        this.investment = 0;
         this.transactions = new ArrayList<>();
+        this.watched = true;
+        this.owned = false;
     }
 
     public Stock() {
@@ -61,6 +56,7 @@ public class Stock {
         this.volume = stock.volume;
         this.marketCap = stock.marketCap;
         this.amount = 0;
+        this.investment = 0;
         this.transactions = new ArrayList<>();
     }
 
@@ -71,24 +67,28 @@ public class Stock {
             return 0;
         }
         if(type == Transaction.TransactionType.BUY_OP) {
-            float bidPrice = Float.parseFloat(this.getBidPrice());
-            float totalPurchasePrice = bidPrice * amount;
+            float askPrice = Float.parseFloat(this.getAskPrice());
+            float totalPurchasePrice = askPrice * amount;
             if(totalPurchasePrice > currentBalance) {
                 return 0;   // Account lacks funds to buy.
             } else {
                 this.amount += amount;
-                transactions.add(new Transaction(type, amount, bidPrice, getDateAsString(), this.getSymbol()));
+                this.investment += totalPurchasePrice;
+                this.transactions.add(new Transaction(type, amount, askPrice, getDateAsString(), this.getSymbol()));
+                owned = true;
                 return -1 * totalPurchasePrice;
             }
         }
         if(type == Transaction.TransactionType.SELL_OP) {
-            float askPrice = Float.parseFloat(this.getAskPrice());
+            float bidPrice = Float.parseFloat(this.getBidPrice());
+            float totalSellPrice = bidPrice * amount;
             if(this.amount < amount) {
                 return 0;   // Account lacks shares to sell.
             } else {
                 this.amount -= amount;
-                transactions.add(new Transaction(type, amount, askPrice, getDateAsString(), this.getSymbol()));
-                return askPrice * amount;
+                this.investment -= totalSellPrice;
+                this.transactions.add(new Transaction(type, amount, bidPrice, getDateAsString(), this.getSymbol()));
+                return totalSellPrice;
             }
         }
         return 0;   // Just in case.
@@ -159,10 +159,6 @@ public class Stock {
         }
     }
 
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
-
     public String getSymbol() {
         return symbol;
     }
@@ -225,5 +221,17 @@ public class Stock {
 
     public int getAmount() {
         return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
+
+    public float getInvestment() {
+        return investment;
+    }
+
+    public void setInvestment(float investment) {
+        this.investment = investment;
     }
 }

@@ -86,18 +86,28 @@ public class Account {
             writer.write(name + "\n");
             writer.write(creationDate+"\n");
             writer.write(Float.toString(balance)+"\n");
-            writer.write("watched stocks line\n");
+            writer.write("stocks line\n");
             for(Stock stock : watchedStocks) {
                 writer.write(stock.getName()+"\n");
                 writer.write(stock.getSymbol()+"\n");
                 writer.write(stock.getExchange()+"\n");
+                writer.write(String.valueOf(stock.getAmount())+"\n");
+                writer.write(String.valueOf(stock.getInvestment())+"\n");
+                writer.write(String.valueOf(stock.watched)+"\n");
+                writer.write(String.valueOf(stock.owned)+"\n");
+                //TODO: backup transaction history
             }
-            writer.write("owned stocks line\n");
             for(Stock stock : ownedStocks) {
+                if(stock.watched == true) {
+                    continue; //already backed up
+                }
                 writer.write(stock.getName()+"\n");
                 writer.write(stock.getSymbol()+"\n");
                 writer.write(stock.getExchange()+"\n");
                 writer.write(String.valueOf(stock.getAmount())+"\n");
+                writer.write(String.valueOf(stock.getInvestment())+"\n");
+                writer.write(String.valueOf(stock.watched)+"\n");
+                writer.write(String.valueOf(stock.owned)+"\n");
                 //TODO: backup transaction history
             }
             writer.close();
@@ -108,7 +118,7 @@ public class Account {
         }
     }
 
-    public void performTransaction(Stock stock, TransactionType type, int amount, float currentBalance) {
+    public void performTransaction(Stock stock, TransactionType type, int amount) {
         Stock targetStock = null;
         boolean newStockFlag = true;
         for(Stock ownedStock : ownedStocks) {
@@ -121,7 +131,7 @@ public class Account {
         if(newStockFlag == true) {
             targetStock = stock;
         }
-        float result = targetStock.performTransaction(type, amount, currentBalance);
+        float result = targetStock.performTransaction(type, amount, this.balance);
         if(result == 0) {   // Transaction failed.
 ;           return;
         } else {            // Transaction succeeded.
