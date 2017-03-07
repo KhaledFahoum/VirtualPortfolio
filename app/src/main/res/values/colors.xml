@@ -5,5 +5,5 @@
     <color name="colorAccent">#7A8B8B</color>
     <color name="colorSell">#228B22</color>
     <color name="colorBuy">#B22222</color>
-
+    <color name="colorNeutral">#696969</color>
 </resources>

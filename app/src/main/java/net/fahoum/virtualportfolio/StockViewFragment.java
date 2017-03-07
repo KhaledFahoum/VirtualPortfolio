@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -34,18 +36,23 @@ public class StockViewFragment extends DialogFragment {
                 ASK_SIZE = 25, BID_SIZE = 23, CHANGE_SIZE = 20, CHANGE_PERCENT_SIZE = 19,
                 DAYS_LOW_SIZE = 19, DAYS_HIGH_SIZE = 19, DIVS_PER_SHARE_SIZE = 19,
                 DIVS_PAY_DATE_SIZE = 19, EARNINGS_SIZE = 19, MARKET_CAP_SIZE = 19,
-                AMOUNT_SIZE = 21,
-            STOCK_VIEW_REFRESH_INITIAL_DELAY = 500, STOCK_VIEW_REFRESH_DELAY_INTERVAL =  1000*2;
+                AMOUNT_SIZE = 21, STOCK_VIEW_REFRESH_DELAY_INTERVAL =  1000*1;
     private Handler refreshHandler;
+    private boolean refreshing = false;
     private Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
+            if(refreshing == true) {
+                return;
+            }
+            refreshing = true;
             try {
                 populateViewWithStockData();
-                //updateTransactionSliderRange();
+                updateTransactionSliderRange();
             } finally {
                 refreshHandler.postDelayed(refreshRunnable, STOCK_VIEW_REFRESH_DELAY_INTERVAL);
             }
+            refreshing = false;
         }
     };
 
@@ -91,10 +98,19 @@ public class StockViewFragment extends DialogFragment {
         });
 
         transactionButton = (Button) stockView.findViewById(R.id.transaction_button);
+        transactionButton.setBackgroundColor(getResources().getColor(R.color.colorNeutral));
+        transactionButton.setText("");
         transactionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentAccount.performTransaction(displayStock, TransactionType.BUY_OP, 30);
+                int input = transactionSlider.getThumb(0).getValue();
+                if(input > 0) {
+                    currentAccount.performTransaction(displayStock, TransactionType.BUY_OP, input);
+                } else if(input < 0) {
+                    currentAccount.performTransaction(displayStock, TransactionType.SELL_OP, Math.abs(input));
+                } else {
+                    return;
+                }
             }
         });
 
@@ -112,10 +128,67 @@ public class StockViewFragment extends DialogFragment {
             transactionSlider.setOnThumbValueChangeListener(new MultiSlider.OnThumbValueChangeListener() {
                 @Override
                 public void onValueChanged(MultiSlider multiSlider, MultiSlider.Thumb thumb, int thumbIndex, int value) {
-                    transactionBox.setText(""+Math.abs(transactionSlider.getThumb(0).getValue()));
+                    int input = transactionSlider.getThumb(0).getValue();
+                    transactionBox.setText(""+Math.abs(input));
+                    transactionBox.setSelection(transactionBox.getText().length());
+                    if(input > 0) {
+                        transactionButton.setBackgroundColor(getResources().getColor(R.color.colorBuy));
+                        Float totalPrice = Float.valueOf(displayStock.getAskPrice())*Math.abs(input);
+
+                        transactionButton.setText("BUY\n(-$"+String.format(java.util.Locale.US,"%.2f", totalPrice)+")");
+                    } else if(input < 0) {
+                        transactionButton.setBackgroundColor(getResources().getColor(R.color.colorSell));
+                        Float totalPrice = Float.valueOf(displayStock.getBidPrice())*Math.abs(input);
+                        transactionButton.setText("SELL\n($"+String.format(java.util.Locale.US,"%.2f", totalPrice)+")");
+                    } else {
+                        transactionButton.setBackgroundColor(getResources().getColor(R.color.colorNeutral));
+                        transactionButton.setText("");
+                    }
                 }
             });
             updateTransactionSliderRange();
+            transactionBox.addTextChangedListener(new TextWatcher() {
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    int input = 0;
+                    if(!s.toString().equals("")) {
+                        input = Integer.valueOf(s.toString());
+                    }
+                    int sliderValue = transactionSlider.getThumb(0).getValue();
+                    if(Math.abs(sliderValue) == input) {
+                        return;
+                    }
+                    if(sliderValue >= 0) {  //Buying
+                        if(input > transactionSlider.getMax()) {
+                            transactionSlider.getThumb(0)
+                                    .setValue(transactionSlider.getMax());
+                        } else {
+                            transactionSlider.getThumb(0).setValue(input);
+                        }
+                    } else if(sliderValue < 0) { //Selling
+                        if(-1*input < transactionSlider.getMin()) {
+                            transactionSlider.getThumb(0)
+                                    .setValue(transactionSlider.getMin());
+                        } else {
+                            transactionSlider.getThumb(0)
+                                    .setValue(-1*input);
+                        }
+                    }
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start,
+                                              int count, int after) {
+                    //..
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start,
+                                          int before, int count) {
+                    //..
+                }
+            });
         }
         // Setting up auto-refresh handler.
         refreshHandler = new Handler();

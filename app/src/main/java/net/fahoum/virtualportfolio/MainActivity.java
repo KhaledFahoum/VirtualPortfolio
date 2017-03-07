@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity
     private String currentDate = "";
     private AccountManager accountManager;
     // units: milliseconds
-    private int FEED_REFRESH_INITIAL_DELAY = 1000*5, FEED_REFRESH_DELAY_INTERVAL = 1000*2;
+    private int FEED_REFRESH_INITIAL_DELAY = 1000*2, FEED_REFRESH_DELAY_INTERVAL = 1000*2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
