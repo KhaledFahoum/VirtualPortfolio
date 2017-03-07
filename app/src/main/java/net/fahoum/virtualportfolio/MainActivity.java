@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -25,35 +26,30 @@ import com.baoyz.swipemenulistview.SwipeMenu;
 import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
-import java.io.BufferedInputStream;
+
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static net.fahoum.virtualportfolio.Utility.*;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SearchStockFragment.OnDataPass {
 
+    public enum feedId { WATCH_FEED, OWNED_FEED };
+    public static feedId currentFeed;
+    public static ArrayList<ArrayList<Stock>> allFeeds = null;
+    public static ArrayList<StockPreviewAdapter> allAdapters = null;
+
     private Account currentAccount = null;
     private ArrayList<Stock> ownedFeed = null;
     private ArrayList<Stock> watchFeed = null;
-    private ArrayList<ArrayList<Stock>> allFeeds = null;
     private StockPreviewAdapter watchFeedAdapter = null;
     private StockPreviewAdapter ownedFeedAdapter = null;
-    private ArrayList<StockPreviewAdapter> allAdapters = null;
-    private FeedRefreshTask task = null;
-    public static enum feedId { WATCH_FEED, OWNED_FEED };
-    public static feedId currentFeed;
+    public static FeedRefreshTask refreshTask = null;
     private com.baoyz.swipemenulistview.SwipeMenuListView stocksView;
     private String currentDate = "";
     private AccountManager accountManager;
@@ -182,96 +178,21 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    public class FeedRefreshTask extends AsyncTask<String, Void, String> {
-        private URL url;
-        private feedId id;
-        private File temporaryCacheFile = null;
-
-        public FeedRefreshTask(String url, feedId id) throws MalformedURLException {
-            this.url = new URL(url);
-            this.id = id;
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            int count;
-            try {
-                URLConnection connection = url.openConnection();
-                connection.connect();
-                InputStream input = new BufferedInputStream(url.openStream(), 10000);
-                temporaryCacheFile = new File(getCacheDir(), "tempfile"+id.ordinal()+".csv");
-                OutputStream output = new FileOutputStream(temporaryCacheFile.getPath());
-                byte data[] = new byte[1024];
-                while ((count = input.read(data)) != -1) {
-                    output.write(data, 0, count);
-                }
-                output.flush();
-                output.close();
-                input.close();
-            } catch (Exception e) {
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            BufferedReader reader;
-            String record;  // Record contains data on one stock, starting with its symbol.
-            String[] values;
-            int index;
-            try {
-                reader = new BufferedReader(new FileReader(temporaryCacheFile));
-                while ((record = reader.readLine()) != null) {
-                    values = record.split(",");
-                    index = findStockIndexBySymbol(values[0].substring(
-                                1, values[0].length() - 1), id);
-                    if(index == -1) {
-                        continue;
-                    }
-                    Stock stock = allFeeds.get(id.ordinal()).get(index);
-                    stock.updateStock(values);
-                }
-                reader.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            allAdapters.get(id.ordinal()).notifyDataSetChanged();
-            task = null;
-        }
-    }
-
     public void refreshFeed(feedId id) {
-        if(task != null)
-            return;
-        String url = "";
-        ArrayList<String> list = new ArrayList<>();
-        ArrayList<Stock> feed = allFeeds.get(id.ordinal());
-        if(feed.size() < 1) {
-            allAdapters.get(id.ordinal()).notifyDataSetChanged();
+        if(refreshTask != null) {
             return;
         }
-        for(Stock stock : feed) {
-            list.add(stock.getSymbol());
-        }
-        url = buildYahooFinanceURL(list, App.getQueryFlagsString());
         try {
-            task = new FeedRefreshTask(url, id);
+            refreshTask = new FeedRefreshTask(id);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        startRefreshTask(task);          // Task will update UI on post-execute.
+        startRefreshTask(refreshTask);          // Task will update UI on post-execute.
     }
 
-    public int findStockIndexBySymbol(String searchSymbol, feedId currentFeed) {
+    public static int findStockIndexBySymbol(String searchSymbol, feedId targetFeed) {
         int i = 0;
-        for(Stock stock : allFeeds.get(currentFeed.ordinal())) {
+        for(Stock stock : allFeeds.get(targetFeed.ordinal())) {
             if(stock.getSymbol().equals(searchSymbol)) {
                 return i;
             }

@@ -64,37 +64,6 @@ public class Stock {
         this.transactions = new ArrayList<>();
     }
 
-    public void refreshStock() {
-        ArrayList<String> symbolContainer = new ArrayList<>();
-        symbolContainer.add(symbol);
-        try {
-            URL url = new URL(buildYahooFinanceURL(symbolContainer, App.getQueryFlagsString()));
-            URLConnection connection = url.openConnection();
-            connection.connect();
-            InputStream input = new BufferedInputStream(url.openStream(), 10000);
-            File temporaryCacheFile = new File(App.getAppContext().getCacheDir(), "single_stock_data.dat");
-            OutputStream output = new FileOutputStream(temporaryCacheFile.getPath());
-            byte data[] = new byte[1024];
-            int count;
-            while ((count = input.read(data)) != -1) {
-                output.write(data, 0, count);
-            }
-            output.flush();
-            output.close();
-            input.close();
-            BufferedReader reader = new BufferedReader(new FileReader(temporaryCacheFile));
-            String record;
-            String[] values;
-            record = reader.readLine();
-            values = record.split(",");
-            updateStock(values);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     /* Returns the change in account balance, or 0 in case of failure. */
     public float performTransaction(Transaction.TransactionType type, int amount, float currentBalance) {
         if(amount < 1 || this.getBidPrice().equals(DATA_NOT_AVAILABLE) ||
@@ -126,14 +95,14 @@ public class Stock {
     }
 
     /* Calls 'setValue()' for each Stock member field. */
-    public void updateStock(String[] values) {
+    public void updateStock(ArrayList<String> values) {
         int i = 0;
         for(String flag : App.getQueryFlagsList()) {
             if(flag.equals("x")) {
                 i++;
                 continue;
             }
-            setValue(values[i], flag);
+            setValue(values.get(i), flag);
             i++;
         }
     }

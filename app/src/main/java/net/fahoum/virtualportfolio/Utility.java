@@ -56,10 +56,10 @@ public final class Utility {
         }
         StringBuilder result = new StringBuilder();
         result.append("http://finance.yahoo.com/d/quotes.csv?s=");
-        result.append(symbols.get(i++));
+        result.append(symbols.get(0));
         for(String str : symbols.subList(1, symbols.size())) {
             result.append("+");
-            result.append(symbols.get(i++));
+            result.append(str);
         }
         result.append("&f=");
         result.append(flags);
