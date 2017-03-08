@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity
         ActionBarDrawerToggle toggle;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        App.setMainActivity(this);
         stocksView = (com.baoyz.swipemenulistview.SwipeMenuListView) findViewById(R.id.stocks_view);
         setTitle(R.string.watch_title);
         accountManager = new AccountManager();
@@ -238,12 +239,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.force_refresh) {
+            printToast("Refreshing...", UI_TOAST);
             refreshFeed(currentFeed);
             return true;
         } else if(item.getItemId() == R.id.clear_all) {
             currentAccount.getWatchedStocks().clear();
             allFeeds.get(currentFeed.ordinal()).clear();
             refreshFeed(currentFeed);
+            printToast("Cleared watched stocks", UI_TOAST);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -300,8 +303,15 @@ public class MainActivity extends AppCompatActivity
         if(index != -1) {
             return;
         }
-        currentAccount.watchNewStock(result);
-        watchFeed.add(result);
+        index = findStockIndexBySymbol(result.getSymbol(), feedId.OWNED_FEED);
+        if(index != -1) {
+            Stock stock = ownedFeed.get(index);
+            currentAccount.watchNewStock(stock);
+            watchFeed.add(stock);
+        } else {
+            currentAccount.watchNewStock(result);
+            watchFeed.add(result);
+        }
         refreshFeed(feedId.WATCH_FEED);
     }
 

@@ -1,5 +1,6 @@
 package net.fahoum.virtualportfolio;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 
@@ -11,6 +12,7 @@ public class App extends Application {
     private static Account currentAccount = null;
     private static String queryFlagsString = null;
     private static ArrayList<String> queryFlagsList = null;
+    private static Activity mainActivity = null;
     public static ArrayList<Stock> watchFeed = null, ownedFeed = null;
 
     @Override
@@ -20,6 +22,14 @@ public class App extends Application {
         initializeQueryFlags();
         watchFeed = new ArrayList<Stock>();
         ownedFeed = new ArrayList<Stock>();
+    }
+
+    public static void setMainActivity(Activity activity) {
+        mainActivity = activity;
+    }
+
+    public static Activity getMainActivity() {
+        return mainActivity;
     }
 
     public static void setDisplayStock(Stock stock) {

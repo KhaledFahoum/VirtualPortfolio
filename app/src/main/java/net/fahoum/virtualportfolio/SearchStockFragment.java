@@ -123,7 +123,9 @@ public class SearchStockFragment extends DialogFragment {
         stocksView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                dataPasser.onDataPass(resultsList.get(position));
+                Stock result = resultsList.get(position);
+                dataPasser.onDataPass(result);
+                printToast("Watching "+result.getSymbol()+":"+result.getExchange(), SEARCH_TOAST);
             }
         });
         return searchView;

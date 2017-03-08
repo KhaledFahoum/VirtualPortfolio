@@ -106,8 +106,12 @@ public class StockViewFragment extends DialogFragment {
                 int input = transactionSlider.getThumb(0).getValue();
                 if(input > 0) {
                     currentAccount.performTransaction(displayStock, TransactionType.BUY_OP, input);
+                    printToast("Bought "+input+" "+displayStock.getSymbol()+" shares @ $"
+                                                +displayStock.getAskPrice(), BUY_TOAST);
                 } else if(input < 0) {
                     currentAccount.performTransaction(displayStock, TransactionType.SELL_OP, Math.abs(input));
+                    printToast("Sold "+Math.abs(input)+" "+displayStock.getSymbol()+" shares @ $"
+                            +displayStock.getBidPrice(), SELL_TOAST);
                 } else {
                     return;
                 }
@@ -134,7 +138,6 @@ public class StockViewFragment extends DialogFragment {
                     if(input > 0) {
                         transactionButton.setBackgroundColor(getResources().getColor(R.color.colorBuy));
                         Float totalPrice = Float.valueOf(displayStock.getAskPrice())*Math.abs(input);
-
                         transactionButton.setText("BUY\n(-$"+String.format(java.util.Locale.US,"%.2f", totalPrice)+")");
                     } else if(input < 0) {
                         transactionButton.setBackgroundColor(getResources().getColor(R.color.colorSell));
