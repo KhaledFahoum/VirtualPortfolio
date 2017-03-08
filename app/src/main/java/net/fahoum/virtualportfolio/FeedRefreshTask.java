@@ -17,21 +17,24 @@ import static net.fahoum.virtualportfolio.Utility.*;
 public class FeedRefreshTask extends AsyncTask<String, Void, String> {
     private URL targetURL;
     private MainActivity.feedId id;
+    private boolean emptyFeed = false;
 
     public FeedRefreshTask(MainActivity.feedId id) throws MalformedURLException {
         this.targetURL = null;
         this.id = id;
+        if(allFeeds.get(id.ordinal()).size() < 1) {
+            emptyFeed = true;
+        }
     }
 
     @Override
     protected void onPreExecute() {
+        if(emptyFeed == true) {
+            return;
+        }
         String targetURL = "";
         ArrayList<String> list = new ArrayList<>();
         ArrayList<Stock> feed = allFeeds.get(id.ordinal());
-        if(feed.size() < 1) {
-            allAdapters.get(id.ordinal()).notifyDataSetChanged();
-            return;
-        }
         for(Stock stock : feed) {
             list.add(stock.getSymbol());
         }
@@ -45,6 +48,9 @@ public class FeedRefreshTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
+        if(emptyFeed == true) {
+            return null;
+        }
         int index;
         Stock stock;
         ArrayList<String> result;

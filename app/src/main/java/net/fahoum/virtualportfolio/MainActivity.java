@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-/*
+
         // Setting up auto-refresh timer
         Timer refreshTimer = new Timer("RefreshTimer", true);
         refreshTimer.scheduleAtFixedRate(new TimerTask() {
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 refreshFeed(currentFeed);
             }
-        }, FEED_REFRESH_INITIAL_DELAY, FEED_REFRESH_DELAY_INTERVAL); */
+        }, FEED_REFRESH_INITIAL_DELAY, FEED_REFRESH_DELAY_INTERVAL);
     }
 
     public void onDestroy() {

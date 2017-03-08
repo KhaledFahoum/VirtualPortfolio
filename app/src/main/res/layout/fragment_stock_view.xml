@@ -25,16 +25,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal|top">
+            android:gravity="top">
             <me.grantland.widget.AutofitTextView
                 android:id="@+id/stock_name"
                 android:maxLines="2"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"/>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal">
                 <TextView
                     android:id="@+id/stock_symbol"
                     android:layout_width="wrap_content"
@@ -54,8 +56,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="1dp"
-                android:gravity="center"
-                android:layout_marginStart="10dp">
+                android:gravity="start"
+                android:layout_gravity="start"
+                android:layout_marginTop="10dp">
                 <TextView
                     android:id="@+id/amount_title"
                     android:layout_width="wrap_content"
